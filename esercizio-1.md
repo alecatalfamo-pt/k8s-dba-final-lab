@@ -44,6 +44,6 @@ Simula un'applicazione backend che si connette al database:
 * Connettiti al Primary tramite il Service corretto e verifica con `SELECT pg_is_in_recovery();`
 * Connettiti alla Replica tramite il Service read-only e verifica che sia in recovery
 * Verifica che una connessione senza TLS venga rifiutata
-* Verifica che il Pod backend raggiunga nginx tramite Ingress da `backend-<namespace>.corso.local`
+* Verifica che un Pod di test raggiunga nginx (il backend) tramite Ingress da `backend-<namespace>.corso.local`
 * Verifica che un Pod senza il label corretto non riesca a connettersi al database
 * Verifica che gli alert siano visibili in Prometheus UI → Alerts
