@@ -16,8 +16,7 @@ Crea un cluster PostgreSQL con CloudNativePG che rispetti questi requisiti:
 
 Simula un'applicazione backend che si connette al database:
 
-* Deploya un Pod `nginx` che rappresenta il backend applicativo
-* Il Pod deve connettersi al cluster PostgreSQL tramite il Service corretto
+* Deploya un Pod `nginx` che rappresenta il backend applicativo — deve avere il label corretto, il Secret e il ConfigMap montati come variabili d'ambiente, così da rappresentare "l'identità" di un'applicazione che si collegherebbe al database
 * Le credenziali del database devono essere gestite tramite Secret — non hardcoded
 * La configurazione non sensibile (nome database, host) deve essere in un ConfigMap
 * Esponi il backend tramite un Ingress raggiungibile a `backend-<namespace>.corso.local`
@@ -26,8 +25,10 @@ Simula un'applicazione backend che si connette al database:
 
 * Il Pod backend deve poter raggiungere il database sulla porta 5432
 * Nessun altro Pod nel namespace deve poter raggiungere il database
-* Il Pod database deve avere un ServiceAccount dedicato senza token API montato
+* Il Pod **backend** deve avere un ServiceAccount dedicato senza token API montato
 * Applica un SecurityContext appropriato al Pod backend
+
+> ⚠️ Non applicare `automountServiceAccountToken: false` al ServiceAccount del cluster PostgreSQL gestito da CNPG — il suo instance manager deve poter parlare con l'API server per coordinare Primary/Replica e leggere lo stato del `Cluster`. Togliergli il token produce un CrashLoopBackOff (il processo non riesce più a verificare lo stato del cluster). Il ServiceAccount senza token va applicato solo al Pod applicativo (backend), che non ha alcuna ragione di parlare con l'API di Kubernetes.
 
 ### Requisiti di monitoring
 
@@ -44,6 +45,7 @@ Simula un'applicazione backend che si connette al database:
 * Connettiti al Primary tramite il Service corretto e verifica con `SELECT pg_is_in_recovery();`
 * Connettiti alla Replica tramite il Service read-only e verifica che sia in recovery
 * Verifica che una connessione senza TLS venga rifiutata
-* Verifica che un Pod di test raggiunga nginx (il backend) tramite Ingress da `backend-<namespace>.corso.local`
-* Verifica che un Pod senza il label corretto non riesca a connettersi al database
+* Verifica che il backend sia raggiungibile tramite Ingress da `backend-<namespace>.corso.local`
+* Usa un Pod temporaneo con immagine `postgres:15` **e lo stesso label del backend** per verificare che una richiesta con quell'identità raggiunga davvero il database sulla porta 5432
+* Usa un Pod temporaneo **senza** il label corretto per verificare che non riesca a connettersi al database (deve andare in timeout, non connection refused)
 * Verifica che gli alert siano visibili in Prometheus UI → Alerts
