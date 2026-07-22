@@ -16,7 +16,7 @@ Installa Percona Operator for MongoDB nel tuo namespace e crea un ReplicaSet con
 Simula un'applicazione che usa MongoDB:
 
 * Deploya un Pod `mongo:6.0` come client applicativo — questa immagine include `mongosh`, quindi qui la verifica di connessione reale è possibile direttamente da questo Pod, senza bisogno di un Pod temporaneo separato
-* Il Pod deve connettersi al ReplicaSet usando la connection string completa con tutti i membri
+* Il Pod deve connettersi al ReplicaSet usando la connection string che sfrutti l'headless service. 
 * La connection string deve essere in un Secret
 * Configura `readPreference=secondaryPreferred` e `w=majority`
 * Il Pod client deve avere un Init Container che aspetta che il ReplicaSet sia disponibile prima di avviarsi — l'Init Container deve usare un'immagine con gli strumenti necessari per verificare la connessione (es. `mongo:6.0` stessa, o `busybox` se verifichi solo la raggiungibilità TCP con `nc`)
